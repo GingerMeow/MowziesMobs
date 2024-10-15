@@ -1,11 +1,13 @@
 package com.bobmowzie.mowziesmobs.server.ability.abilities.player.geomancy;
 
+import com.bobmowzie.mowziesmobs.MowziesMobs;
 import com.bobmowzie.mowziesmobs.client.model.tools.geckolib.MowzieGeoBone;
 import com.bobmowzie.mowziesmobs.client.model.tools.geckolib.MowzieGeoModel;
 import com.bobmowzie.mowziesmobs.client.particle.ParticleHandler;
 import com.bobmowzie.mowziesmobs.client.particle.util.AdvancedParticleBase;
 import com.bobmowzie.mowziesmobs.client.particle.util.ParticleComponent;
 import com.bobmowzie.mowziesmobs.client.render.entity.player.GeckoPlayer;
+import com.bobmowzie.mowziesmobs.client.sound.IGeomancyRumbler;
 import com.bobmowzie.mowziesmobs.server.ability.Ability;
 import com.bobmowzie.mowziesmobs.server.ability.AbilitySection;
 import com.bobmowzie.mowziesmobs.server.ability.AbilityType;
@@ -46,7 +48,7 @@ import software.bernie.geckolib.core.object.PlayState;
 
 import java.util.List;
 
-public class TunnelingAbility extends PlayerAbility {
+public class TunnelingAbility extends PlayerAbility implements IGeomancyRumbler {
     private int doubleTapTimer = 0;
     public boolean prevUnderground;
     public BlockState justDug = Blocks.DIRT.defaultBlockState();
@@ -60,6 +62,8 @@ public class TunnelingAbility extends PlayerAbility {
 
     private InteractionHand whichHand;
     private ItemStack gauntletStack;
+
+    private boolean isRumbling;
 
     public TunnelingAbility(AbilityType<Player, ? extends Ability> abilityType, Player user) {
         super(abilityType, user, new AbilitySection[] {
@@ -103,6 +107,8 @@ public class TunnelingAbility extends PlayerAbility {
             spinAmount = 0;
             pitch = 0;
         }
+        if (getLevel().isClientSide())
+            MowziesMobs.PROXY.playGeomancyRumbleSound(this);
     }
 
     public boolean damageGauntlet() {
@@ -176,7 +182,6 @@ public class TunnelingAbility extends PlayerAbility {
         }
 
         if ((underground && (prevUnderground || lookVec.y < 0) && timeAboveGround > 5) || (getTicksInUse() > 1 && usingGauntlet && lookVec.y < 0 && stack.getDamageValue() + 5 < stack.getMaxDamage())) {
-            if (getUser().tickCount % 16 == 0) getUser().playSound(MMSounds.EFFECT_GEOMANCY_RUMBLE.get(rand.nextInt(3)).get(), 0.6f, 0.5f + rand.nextFloat() * 0.2f);
             Vec3 userCenter = getUser().position().add(0, getUser().getBbHeight() / 2f, 0);
             float radius = 2f;
             AABB aabb = new AABB(-radius, -radius, -radius, radius, radius, radius);
@@ -203,6 +208,7 @@ public class TunnelingAbility extends PlayerAbility {
                 }
             }
         }
+        isRumbling = underground;
         if (!prevUnderground && underground) {
             timeUnderground = 0;
             getUser().playSound(MMSounds.EFFECT_GEOMANCY_BREAK_MEDIUM.get(rand.nextInt(3)).get(), 1f, 0.9f + rand.nextFloat() * 0.1f);
@@ -332,5 +338,30 @@ public class TunnelingAbility extends PlayerAbility {
         if (event.getEntity() == getUser() && isUsing()) {
             event.setDamageMultiplier(0);
         }
+    }
+
+    @Override
+    public boolean isRumbling() {
+        return isRumbling && isUsing();
+    }
+
+    @Override
+    public boolean isFinishedRumbling() {
+        return !isUsing();
+    }
+
+    @Override
+    public float getRumblerX() {
+        return (float) getUser().getX();
+    }
+
+    @Override
+    public float getRumblerY() {
+        return (float) getUser().getY();
+    }
+
+    @Override
+    public float getRumblerZ() {
+        return (float) getUser().getZ();
     }
 }

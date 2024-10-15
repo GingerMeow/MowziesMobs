@@ -1,6 +1,7 @@
 package com.bobmowzie.mowziesmobs.server;
 
 import com.bobmowzie.mowziesmobs.MowziesMobs;
+import com.bobmowzie.mowziesmobs.client.sound.IGeomancyRumbler;
 import com.bobmowzie.mowziesmobs.server.config.ConfigHandler;
 import com.bobmowzie.mowziesmobs.server.entity.effects.EntitySolarBeam;
 import com.bobmowzie.mowziesmobs.server.entity.effects.EntitySunstrike;
@@ -101,6 +102,9 @@ public class ServerProxy {
     }
 
     public void playSolarBeamSound(EntitySolarBeam entity) {
+    }
+
+    public void playGeomancyRumbleSound(IGeomancyRumbler rumbler) {
     }
 
     public void minecartParticles(ClientLevel world, AbstractMinecart minecart, float scale, double x, double y, double z, BlockState state, BlockPos pos) {
