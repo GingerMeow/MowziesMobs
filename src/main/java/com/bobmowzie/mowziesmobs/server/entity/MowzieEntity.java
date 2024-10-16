@@ -26,6 +26,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
@@ -177,8 +178,24 @@ public abstract class MowzieEntity extends PathfinderMob implements IEntityAddit
             List<? extends String> allowedBlocks = spawnConfig.allowedBlocks.get();
             List<? extends String> allowedBlockTags = spawnConfig.allowedBlockTags.get();
             if (blockName == null) return false;
-            if (!allowedBlocks.isEmpty() && !allowedBlocks.contains(blockName.toString()) && !allowedBlocks.contains(blockName.getPath())) return false;
-            if (!allowedBlockTags.isEmpty() && !isBlockTagAllowed(allowedBlockTags, block)) return false;
+            if (allowedBlocks.isEmpty() && allowedBlockTags.isEmpty()) {
+                // If both lists are empty, use default block validation instead
+                if (!block.isValidSpawn(world, spawnPos.below(), type)) {
+                    return false;
+                }
+            }
+            else {
+                boolean isBlockAllowed = false;
+                // if the block is in the block list, it's allowed
+                if (!allowedBlocks.isEmpty() && (allowedBlocks.contains(blockName.toString()) || allowedBlocks.contains(blockName.getPath())))
+                    isBlockAllowed = true;
+                // if the block is already allowed, no need to check its tags. But if its not, see if it's in the tags.
+                if (!isBlockAllowed && !allowedBlockTags.isEmpty() && isBlockTagAllowed(allowedBlockTags, block)) isBlockAllowed = true;
+                // if after checking both, its still not allowed, return false
+                if (!isBlockAllowed) {
+                    return false;
+                }
+            }
 
             // See sky
             if (spawnConfig.needsSeeSky.get() && !world.canSeeSkyFromBelowWater(spawnPos)) {
@@ -218,6 +235,51 @@ public abstract class MowzieEntity extends PathfinderMob implements IEntityAddit
 
     protected boolean isWithinDistance(BlockPos pos, int distance) {
         return pos.closerThan(this.blockPosition(), (double)distance);
+    }
+
+    // Copied from Mob class file
+    @Override
+    public void checkDespawn() {
+        if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
+            this.discard();
+        } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
+            Entity entity = this.level().getNearestPlayer(this, -1.0D);
+            net.minecraftforge.eventbus.api.Event.Result result = net.minecraftforge.event.ForgeEventFactory.canEntityDespawn(this, (ServerLevel) this.level());
+            if (result == net.minecraftforge.eventbus.api.Event.Result.DENY) {
+                noActionTime = 0;
+                entity = null;
+            } else if (result == net.minecraftforge.eventbus.api.Event.Result.ALLOW) {
+                this.discard();
+                entity = null;
+            }
+            if (entity != null) {
+                double d0 = entity.distanceToSqr(this);
+                int i = getDespawnDistance();
+                int j = i * i;
+                if (d0 > (double)j && this.removeWhenFarAway(d0)) {
+                    this.discard();
+                }
+
+                int k = getNoDespawnDistance();
+                int l = k * k;
+                if (this.noActionTime > 600 && this.random.nextInt(800) == 0 && d0 > (double)l && this.removeWhenFarAway(d0)) {
+                    this.discard();
+                } else if (d0 < (double)l) {
+                    this.noActionTime = 0;
+                }
+            }
+
+        } else {
+            this.noActionTime = 0;
+        }
+    }
+
+    public int getDespawnDistance() {
+        return this.getType().getCategory().getDespawnDistance();
+    }
+
+    public int getNoDespawnDistance() {
+        return this.getType().getCategory().getNoDespawnDistance();
     }
 
     @Override

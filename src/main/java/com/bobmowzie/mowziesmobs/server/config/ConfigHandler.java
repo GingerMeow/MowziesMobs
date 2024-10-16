@@ -254,7 +254,7 @@ public final class ConfigHandler {
                     70, 1, 4, 1,
                     new BiomeConfig(builder, Collections.singletonList("minecraft:is_jungle"), Collections.emptyList(), Collections.emptyList()),
                     Collections.emptyList(),
-                    Arrays.asList("minecraft:valid_spawn", "minecraft:leaves", "minecraft:logs"),
+                    Arrays.asList("minecraft:animals_spawnable_on", "minecraft:leaves", "minecraft:logs"),
                     -65, 60, true, false, false,
                     Arrays.asList("minecraft:villages", "minecraft:pillager_outposts")
 
@@ -276,7 +276,7 @@ public final class ConfigHandler {
                     5, 1, 1, 1,
                     new BiomeConfig(builder, Collections.singletonList("minecraft:is_savanna"), Collections.emptyList(), Collections.emptyList()),
                     Collections.emptyList(),
-                    Arrays.asList("minecraft:valid_spawn", "minecraft:sand"),
+                    Arrays.asList("minecraft:animals_spawnable_on", "minecraft:sand"),
                     -65, 60, false, false, false,
                     Arrays.asList("minecraft:villages", "minecraft:pillager_outposts", "mowziesmobs:umvuthana_groves")
             );
@@ -293,11 +293,11 @@ public final class ConfigHandler {
         Naga(final ForgeConfigSpec.Builder builder) {
             builder.push("naga");
             spawnConfig = new SpawnConfig(builder,
-                    13, 2, 3, 1,
+                    20, 1, 2, 1,
                     new BiomeConfig(builder, Arrays.asList("minecraft:is_beach,minecraft:is_mountain", "minecraft:is_beach,minecraft:is_hill"), Collections.singletonList("minecraft:stony_shore"), Collections.emptyList()),
                     Collections.emptyList(),
-                    Collections.emptyList(),
-                    -65, 70, false, true, false,
+                    Arrays.asList("minecraft:animals_spawnable_on", "minecraft:base_stone_overworld"),
+                    -65, 68, true, true, false,
                     Arrays.asList("minecraft:villages", "minecraft:pillager_outposts")
             );
             combatConfig = new CombatConfig(builder,1, 1);
@@ -316,7 +316,7 @@ public final class ConfigHandler {
                     5, 2, 4, 1,
                     new BiomeConfig(builder, Collections.singletonList("minecraft:is_forest,mowziesmobs:is_magical,!forge:is_snowy"), Collections.emptyList(), Collections.emptyList()),
                     Collections.emptyList(),
-                    Arrays.asList("minecraft:valid_spawn", "minecraft:leaves", "minecraft:logs"),
+                    Arrays.asList("minecraft:animals_spawnable_on", "minecraft:leaves", "minecraft:logs"),
                     -65, 60, true, false, false,
                     Collections.emptyList()
             );
