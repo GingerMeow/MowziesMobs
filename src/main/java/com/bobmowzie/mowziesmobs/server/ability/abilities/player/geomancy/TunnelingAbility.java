@@ -252,7 +252,7 @@ public class TunnelingAbility extends PlayerAbility implements IGeomancyRumbler 
 
     @Override
     public boolean canUse() {
-        return super.canUse();
+        return super.canUse() && ConfigHandler.COMMON.TOOLS_AND_ABILITIES.EARTHREND_GAUNTLET.enableTunneling.get();
     }
 
     @Override
