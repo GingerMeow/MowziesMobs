@@ -3,28 +3,38 @@ package com.bobmowzie.mowziesmobs.server.entity.effects.geomancy;
 import com.bobmowzie.mowziesmobs.client.particle.ParticleHandler;
 import com.bobmowzie.mowziesmobs.client.particle.util.AdvancedParticleBase;
 import com.bobmowzie.mowziesmobs.client.particle.util.ParticleComponent;
+import com.bobmowzie.mowziesmobs.server.config.ConfigHandler;
 import com.bobmowzie.mowziesmobs.server.entity.effects.EntityCameraShake;
 import com.bobmowzie.mowziesmobs.server.entity.sculptor.EntitySculptor;
 import com.bobmowzie.mowziesmobs.server.sound.MMSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by BobMowzie on 4/14/2017.
  */
-public class EntityBoulderBase extends EntityGeomancyBase implements IEntityAdditionalSpawnData {
+public class EntityBoulderBase extends EntityGeomancyBase {
     private static final byte ACTIVATE_ID = 67;
 
     public BlockState storedBlock;
@@ -33,6 +43,8 @@ public class EntityBoulderBase extends EntityGeomancyBase implements IEntityAddi
     protected int finishedRisingTick = 4;
     public int risingTick = 0;
     public boolean active = false;
+
+    private static final EntityDataAccessor<Integer> RISING_TICK = SynchedEntityData.defineId(EntityGeomancyBase.class, EntityDataSerializers.INT);
 
     public static final HashMap<GeomancyTier, EntityDimensions> SIZE_MAP = new HashMap<>();
     static {
@@ -112,6 +124,7 @@ public class EntityBoulderBase extends EntityGeomancyBase implements IEntityAddi
         if (firstTick) {
             setSizeParams();
             boulderSize = getTier();
+            risingTick = getRisingTickData();
         }
         if (storedBlock == null) storedBlock = getBlock();
 
@@ -200,13 +213,29 @@ public class EntityBoulderBase extends EntityGeomancyBase implements IEntityAddi
         }
     }
 
-    @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
-        buffer.writeInt(risingTick);
+    public int getRisingTickData() {
+        return getEntityData().get(RISING_TICK);
+    }
+
+    public void setRisingTickData(int risingTick) {
+        getEntityData().set(RISING_TICK, risingTick);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer) {
-        risingTick = buffer.readInt();
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putInt("risingTick", risingTick);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        setRisingTickData(compound.getInt("risingTick"));
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        getEntityData().define(RISING_TICK, 0);
     }
 }
