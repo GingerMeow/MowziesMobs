@@ -30,6 +30,7 @@ import com.bobmowzie.mowziesmobs.server.item.UmvuthanaMask;
 import com.bobmowzie.mowziesmobs.server.loot.LootTableHandler;
 import com.bobmowzie.mowziesmobs.server.potion.EffectHandler;
 import com.bobmowzie.mowziesmobs.server.sound.MMSounds;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -196,7 +197,6 @@ public abstract class EntityUmvuthana extends MowzieGeckoEntity {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-//        setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -8);
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(0, new UseAbilityAI<>(this, ACTIVATE_ABILITY));
         goalSelector.addGoal(0, new UseAbilityAI<>(this, DEACTIVATE_ABILITY));
@@ -331,6 +331,11 @@ public abstract class EntityUmvuthana extends MowzieGeckoEntity {
     }
 
     @Override
+    public boolean shouldPlayHurtAnimation(DamageSource source, float damage) {
+        return super.shouldPlayHurtAnimation(source, damage);// && damage > 2;
+    }
+
+    @Override
     protected SoundEvent getAmbientSound() {
         if (getActiveAbilityType() == DEACTIVATE_ABILITY) {
             return null;
@@ -429,7 +434,7 @@ public abstract class EntityUmvuthana extends MowzieGeckoEntity {
             }
             return;
         }
-        if (getActiveAbility() != null) {
+        if (getActiveAbilityType() != HURT_ABILITY) {
             getNavigation().stop();
             yHeadRot = yBodyRot = getYRot();
         }
